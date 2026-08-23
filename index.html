@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de CPA</title>
+<style>
+  :root{
+    --bg:#F4F5EF;
+    --card:#FFFFFF;
+    --text:#0E0E0E;
+    --muted:#5a5c55;
+    --border:#dfe1d8;
+    --green:#3E7A22;
+    --green-vivid:#96BF48;
+    --green-deep:#5E8E3E;
+    --red:#C0392B;
+    --amber:#b07d10;
+    --input-bg:#FFFFFF;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0C0C0A;
+      --card:#151511;
+      --text:#F4F5EF;
+      --muted:#9a9c92;
+      --border:#2a2b25;
+      --green:#96BF48;
+      --green-vivid:#96BF48;
+      --green-deep:#5E8E3E;
+      --red:#e05a4b;
+      --amber:#e0a52e;
+      --input-bg:#1c1d17;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0C0C0A;
+    --card:#151511;
+    --text:#F4F5EF;
+    --muted:#9a9c92;
+    --border:#2a2b25;
+    --green:#96BF48;
+    --green-vivid:#96BF48;
+    --green-deep:#5E8E3E;
+    --red:#e05a4b;
+    --amber:#e0a52e;
+    --input-bg:#1c1d17;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
+    line-height:1.5;
+    padding:32px 16px 64px;
+  }
+  .wrap{max-width:960px;margin:0 auto}
+  header{margin-bottom:28px}
+  .tag{
+    display:inline-block;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--green);
+    border:1px solid var(--green);
+    border-radius:999px;
+    padding:4px 12px;
+    margin-bottom:12px;
+  }
+  h1{
+    font-size:clamp(28px,5vw,40px);
+    font-weight:800;
+    letter-spacing:-0.03em;
+    line-height:1.1;
+  }
+  h1 .g{color:var(--green)}
+  .sub{color:var(--muted);margin-top:8px;max-width:560px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px;
+  }
+  .card h2{
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:18px;
+  }
+  .field{margin-bottom:16px}
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    margin-bottom:5px;
+  }
+  .field .hint{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    font-weight:400;
+    margin-top:2px;
+  }
+  .inrow{display:flex;align-items:center;gap:0}
+  .prefix{
+    background:var(--input-bg);
+    border:1px solid var(--border);
+    border-right:none;
+    border-radius:8px 0 0 8px;
+    padding:10px 12px;
+    font-size:15px;
+    color:var(--muted);
+    font-weight:700;
+  }
+  input[type="number"]{
+    width:100%;
+    background:var(--input-bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:16px;
+    color:var(--text);
+    font-family:inherit;
+  }
+  .inrow input[type="number"]{border-radius:0 8px 8px 0}
+  input[type="number"]:focus{outline:2px solid var(--green-vivid);outline-offset:-1px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  select{
+    background:var(--input-bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:15px;
+    color:var(--text);
+    font-family:inherit;
+  }
+
+  button.calc{
+    width:100%;
+    background:linear-gradient(135deg,var(--green-vivid),var(--green-deep));
+    color:#0C0C0A;
+    border:none;
+    border-radius:8px;
+    padding:14px;
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:.02em;
+    cursor:pointer;
+    font-family:inherit;
+    margin-top:4px;
+  }
+  button.calc:hover{filter:brightness(1.06)}
+  .err{
+    display:none;
+    background:color-mix(in srgb,var(--red) 12%,transparent);
+    border:1px solid var(--red);
+    color:var(--red);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:13px;
+    font-weight:600;
+    margin-top:12px;
+  }
+
+  /* Resultados */
+  .results{display:none}
+  .results.on{display:block}
+  .big2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  @media (max-width:460px){.big2{grid-template-columns:1fr}}
+  .kpi{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px;
+  }
+  .kpi.ideal{border-color:var(--green);background:color-mix(in srgb,var(--green-vivid) 9%,transparent)}
+  .kpi.max{border-color:var(--amber)}
+  .kpi .lbl{
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .kpi .val{
+    font-size:30px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    margin-top:4px;
+  }
+  .kpi.ideal .val{color:var(--green)}
+  .kpi.max .val{color:var(--amber)}
+  .kpi .exp{font-size:12px;color:var(--muted);margin-top:4px}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+  td{padding:8px 0;border-bottom:1px solid var(--border)}
+  tr:last-child td{border-bottom:none}
+  td.num{text-align:right;font-weight:700;white-space:nowrap}
+  td.neg{color:var(--red)}
+  td.pos{color:var(--green)}
+
+  .veredito{
+    margin-top:16px;
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:14px;
+    border:1px solid var(--border);
+  }
+  .veredito b{display:block;margin-bottom:2px}
+  .veredito.ok{border-color:var(--green);background:color-mix(in srgb,var(--green-vivid) 9%,transparent)}
+  .veredito.meh{border-color:var(--amber);background:color-mix(in srgb,var(--amber) 9%,transparent)}
+  .veredito.bad{border-color:var(--red);background:color-mix(in srgb,var(--red) 9%,transparent)}
+
+  .legend{
+    margin-top:20px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .legend b{color:var(--text)}
+  .legend p{margin-top:6px}
+
+  footer{margin-top:36px;text-align:center;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="tag">Global Brand · Drop Global</span>
+    <h1>Calculadora de <span class="g">CPA</span> e Margem</h1>
+    <p class="sub">Coloca o custo, o preço e a taxa. Ela devolve o CPA ideal, o CPA máximo e o veredito: dá pra rodar tráfego nesse produto ou não.</p>
+  </header>
+
+  <div class="grid">
+
+    <!-- ENTRADAS -->
+    <div class="card">
+      <h2>Dados do produto</h2>
+
+      <div class="field">
+        <label for="moeda">Moeda</label>
+        <select id="moeda">
+          <option value="$" selected>Dólar ($)</option>
+          <option value="€">Euro (€)</option>
+          <option value="R$">Real (R$)</option>
+          <option value="£">Libra (£)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="custo">Custo do produto
+          <span class="hint">Quanto você paga no fornecedor, com frete até o cliente</span>
+        </label>
+        <div class="inrow"><span class="prefix cur">$</span><input type="number" id="custo" min="0" step="0.01" placeholder="10.00"></div>
+      </div>
+
+      <div class="field">
+        <label for="ticket">Seu preço de venda (ticket)
+          <span class="hint">Por quanto você vai vender</span>
+        </label>
+        <div class="inrow"><span class="prefix cur">$</span><input type="number" id="ticket" min="0" step="0.01" placeholder="49.00"></div>
+      </div>
+
+      <div class="field">
+        <label for="mercado">Preço médio do mercado <span style="font-weight:400;color:var(--muted)">(opcional)</span>
+          <span class="hint">A média que os concorrentes vendem esse produto</span>
+        </label>
+        <div class="inrow"><span class="prefix cur">$</span><input type="number" id="mercado" min="0" step="0.01" placeholder="55.00"></div>
+      </div>
+
+      <div class="field">
+        <label for="cpaMercado">CPA médio do mercado <span style="font-weight:400;color:var(--muted)">(opcional)</span>
+          <span class="hint">O que se paga de anúncio por venda nesse nicho (a /raio-x te dá esse número)</span>
+        </label>
+        <div class="inrow"><span class="prefix cur">$</span><input type="number" id="cpaMercado" min="0" step="0.01" placeholder="40.00"></div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="taxa">Taxa (%)
+            <span class="hint">Gateway e checkout, % sobre o ticket</span>
+          </label>
+          <input type="number" id="taxa" min="0" max="50" step="0.1" value="5">
+        </div>
+        <div class="field">
+          <label for="lucro">Lucro desejado (%)
+            <span class="hint">Margem líquida alvo sobre o ticket</span>
+          </label>
+          <input type="number" id="lucro" min="0" max="90" step="1" value="20">
+        </div>
+      </div>
+
+      <button class="calc" id="btn">Calcular</button>
+      <div class="err" id="err"></div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div class="card">
+      <h2>Resultado</h2>
+
+      <div id="vazio" style="color:var(--muted);font-size:14px;padding:24px 0;text-align:center">
+        Preenche os campos ao lado e clica em <b>Calcular</b>.
+      </div>
+
+      <div class="results" id="results">
+        <div class="big2">
+          <div class="kpi ideal">
+            <div class="lbl">CPA ideal</div>
+            <div class="val" id="cpaIdeal">–</div>
+            <div class="exp">Pagando isso por venda, você embolsa o lucro que definiu</div>
+          </div>
+          <div class="kpi max">
+            <div class="lbl">CPA máximo</div>
+            <div class="val" id="cpaMax">–</div>
+            <div class="exp">Teto absoluto: acima disso a venda dá prejuízo (0x0)</div>
+          </div>
+        </div>
+
+        <table aria-label="Quebra do cálculo">
+          <tr><td>Ticket (preço de venda)</td><td class="num" id="rTicket">–</td></tr>
+          <tr><td>(−) Custo do produto</td><td class="num neg" id="rCusto">–</td></tr>
+          <tr><td>(−) Taxa <span id="rTaxaPct"></span></td><td class="num neg" id="rTaxa">–</td></tr>
+          <tr><td>(−) Lucro reservado <span id="rLucroPct"></span></td><td class="num pos" id="rLucro">–</td></tr>
+          <tr><td><b>Sobra pra pagar o anúncio (CPA ideal)</b></td><td class="num" id="rSobra">–</td></tr>
+        </table>
+
+        <table aria-label="Indicadores" style="margin-top:14px">
+          <tr><td>Markup (ticket ÷ custo)</td><td class="num" id="rMarkup">–</td></tr>
+          <tr><td>Margem bruta (antes do anúncio)</td><td class="num" id="rMargem">–</td></tr>
+          <tr><td>ROAS mínimo pra não perder dinheiro</td><td class="num" id="rRoasMin">–</td></tr>
+          <tr><td>ROAS no CPA ideal</td><td class="num" id="rRoasIdeal">–</td></tr>
+          <tr id="rowMercado" style="display:none"><td>Seu preço vs. mercado</td><td class="num" id="rMercado">–</td></tr>
+        </table>
+
+        <div class="veredito" id="veredito"></div>
+        <div class="veredito" id="sugestao" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <b>Como ler:</b>
+    <p><b>CPA</b> é o custo por aquisição: quanto você paga de anúncio pra fazer 1 venda. <b>CPA ideal</b> = ticket − custo − taxa − lucro desejado. <b>CPA máximo</b> = ticket − custo − taxa (vende, mas fica no zero a zero). <b>Markup</b> é quantas vezes o preço cobre o custo: a faixa de partida no drop é 3x a 4x, mas quem decide é a margem, não o markup. <b>ROAS</b> é o retorno sobre o gasto em anúncio: ROAS mínimo = ticket ÷ CPA máximo. No drop global (Big Five), a faixa boa de ticket é <b>$50 a $100</b>: abaixo disso o CPA come a margem, e pra esses países $50 ou $60 não é nada.</p>
+  </div>
+
+  <footer>Global Brand · Calculadora de CPA pra drop global</footer>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var cur = '$';
+
+  $('moeda').addEventListener('change', function(){
+    cur = this.value;
+    var ps = document.querySelectorAll('.prefix.cur');
+    for (var i=0;i<ps.length;i++) ps[i].textContent = cur;
+  });
+
+  function money(v){
+    return cur + ' ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  function num(id){
+    var v = parseFloat($(id).value);
+    return isNaN(v) ? null : v;
+  }
+
+  function calcular(){
+    var err = $('err');
+    err.style.display = 'none';
+
+    var custo = num('custo');
+    var ticket = num('ticket');
+    var mercado = num('mercado');
+    var cpaMercado = num('cpaMercado');
+    var taxaPct = num('taxa');
+    var lucroPct = num('lucro');
+
+    if (custo === null || ticket === null){
+      err.textContent = 'Preenche pelo menos o custo do produto e o preço de venda.';
+      err.style.display = 'block';
+      return;
+    }
+    if (taxaPct === null) taxaPct = 0;
+    if (lucroPct === null) lucroPct = 0;
+    if (ticket <= 0){
+      err.textContent = 'O preço de venda precisa ser maior que zero.';
+      err.style.display = 'block';
+      return;
+    }
+    if (custo >= ticket){
+      err.textContent = 'O custo está igual ou maior que o preço de venda. Assim não existe margem: sobe o preço ou troca de fornecedor.';
+      err.style.display = 'block';
+      return;
+    }
+
+    var taxa = ticket * (taxaPct/100);
+    var lucro = ticket * (lucroPct/100);
+    var cpaMax = ticket - custo - taxa;
+    var cpaIdeal = cpaMax - lucro;
+    var markup = ticket / custo;
+    var margemBruta = (cpaMax / ticket) * 100;
+    var roasMin = cpaMax > 0 ? ticket / cpaMax : null;
+    var roasIdeal = cpaIdeal > 0 ? ticket / cpaIdeal : null;
+
+    $('vazio').style.display = 'none';
+    $('results').classList.add('on');
+
+    $('cpaIdeal').textContent = money(Math.max(cpaIdeal,0));
+    $('cpaMax').textContent = money(Math.max(cpaMax,0));
+
+    $('rTicket').textContent = money(ticket);
+    $('rCusto').textContent = '− ' + money(custo);
+    $('rTaxa').textContent = '− ' + money(taxa);
+    $('rTaxaPct').textContent = '(' + taxaPct.toLocaleString('pt-BR') + '%)';
+    $('rLucro').textContent = '− ' + money(lucro);
+    $('rLucroPct').textContent = '(' + lucroPct.toLocaleString('pt-BR') + '%)';
+    $('rSobra').textContent = money(cpaIdeal);
+
+    $('rMarkup').textContent = markup.toLocaleString('pt-BR',{maximumFractionDigits:1}) + 'x';
+    $('rMargem').textContent = margemBruta.toLocaleString('pt-BR',{maximumFractionDigits:0}) + '%';
+    $('rRoasMin').textContent = roasMin ? roasMin.toLocaleString('pt-BR',{maximumFractionDigits:2}) : '–';
+    $('rRoasIdeal').textContent = roasIdeal ? roasIdeal.toLocaleString('pt-BR',{maximumFractionDigits:2}) : '–';
+
+    // Comparação com o mercado
+    var rowM = $('rowMercado');
+    if (mercado !== null && mercado > 0){
+      var diff = ((ticket - mercado) / mercado) * 100;
+      var txt;
+      if (Math.abs(diff) < 3) txt = 'na média do mercado';
+      else if (diff > 0) txt = diff.toLocaleString('pt-BR',{maximumFractionDigits:0}) + '% acima';
+      else txt = Math.abs(diff).toLocaleString('pt-BR',{maximumFractionDigits:0}) + '% abaixo';
+      $('rMercado').textContent = txt;
+      rowM.style.display = '';
+    } else {
+      rowM.style.display = 'none';
+    }
+
+    // Veredito
+    var v = $('veredito');
+    v.className = 'veredito';
+    if (cpaIdeal <= 0){
+      v.classList.add('bad');
+      v.innerHTML = '<b>🔴 Não roda tráfego assim</b>Com esse preço e esse custo, não sobra nada pra pagar anúncio com o lucro que você quer. Sobe o ticket, corta o custo ou aceita menos margem.';
+    } else if (cpaMercado !== null && cpaMercado > 0 && cpaMax < cpaMercado){
+      v.classList.add('bad');
+      v.innerHTML = '<b>🔴 Produto fora antes do primeiro teste</b>Tua margem por venda (' + money(cpaMax) + ') é menor que o CPA médio do mercado (' + money(cpaMercado) + '). Se a margem é menor que o CPA médio, a operação sangra por mais tráfego que você jogue. Sobe o ticket, monta bundle ou troca de produto.';
+    } else if (cpaMercado !== null && cpaMercado > 0 && cpaIdeal < cpaMercado){
+      v.classList.add('meh');
+      v.innerHTML = '<b>🟡 Roda, mas sem folga pro lucro cheio</b>O CPA do mercado (' + money(cpaMercado) + ') está acima do teu CPA ideal (' + money(cpaIdeal) + '): você vende, mas com lucro abaixo dos ' + lucroPct.toLocaleString('pt-BR') + '%. Exige criativo muito assertivo, ou ticket maior (bundle e order bump sobem o AOV).';
+    } else if (markup < 3){
+      v.classList.add('meh');
+      v.innerHTML = '<b>🟡 Margem apertada</b>Markup de ' + markup.toLocaleString('pt-BR',{maximumFractionDigits:1}) + 'x (a faixa de partida no drop é 3x a 4x). Dá pra testar, mas qualquer variação de CPA come teu lucro. A margem é a gordura que paga o tráfego: aqui sobra só ' + money(cpaIdeal) + ' por venda pro anúncio.';
+    } else {
+      v.classList.add('ok');
+      v.innerHTML = '<b>🟢 Produto com margem pra escalar</b>Markup de ' + markup.toLocaleString('pt-BR',{maximumFractionDigits:1}) + 'x. Você tem até ' + money(cpaIdeal) + ' de CPA pra bater teu lucro de ' + lucroPct.toLocaleString('pt-BR') + '%, e fôlego até ' + money(cpaMax) + ' na fase de teste' + (cpaMercado !== null && cpaMercado > 0 ? ', acima do CPA médio do mercado (' + money(cpaMercado) + ')' : '') + '.';
+    }
+
+    // Sugestão de preço baseada no mercado e no custo
+    var s = $('sugestao');
+    var sugMin = custo * 3;
+    var sugTxt = '';
+    if (mercado !== null && mercado > 0){
+      var teto = mercado * 1.10;
+      var piso = Math.max(sugMin, mercado * 0.85);
+      if (piso < teto){
+        sugTxt = '<b>💡 Faixa de preço sugerida: ' + money(piso) + ' a ' + money(teto) + '</b>Piso: pelo menos 3x o custo, sem descolar mais de 15% abaixo do mercado (preço baixo demais queima percepção de valor). Teto: até 10% acima da média do mercado, se a tua oferta e criativo sustentarem.';
+      } else {
+        sugTxt = '<b>⚠️ O mercado vende abaixo de 3x o teu custo</b>A média do mercado (' + money(mercado) + ') não cobre um markup de 3x sobre o teu custo. Ou o teu fornecedor está caro, ou esse produto compete por preço: os dois são sinal amarelo pra drop.';
+      }
+      s.innerHTML = sugTxt;
+      s.className = 'veredito';
+      s.style.display = 'block';
+    } else {
+      s.style.display = 'none';
+    }
+  }
+
+  $('btn').addEventListener('click', calcular);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') calcular();
+  });
+})();
+</script>
+</body>
+</html>
